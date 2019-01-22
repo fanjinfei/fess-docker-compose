@@ -1,0 +1,1 @@
+{"_index":".fess_config.data_config","_type":"data_config","_id":"M3EVd2gBYeuDaDS8qbFA","_score":1,"_source":{"updatedTime":1548186134793,"virtualHosts":[],"updatedBy":"admin","createdBy":"admin","permissions":["Rguest"],"sortOrder":0,"available":true,"name":"experiments","createdTime":1548186134793,"boost":1,"handlerName":"CSV"}}
