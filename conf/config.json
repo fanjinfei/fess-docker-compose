@@ -1,0 +1,11 @@
+{
+ "proxies":
+ {
+   "default":
+   {
+     "httpProxy": "http://y:x@14.206.2.26:80",
+     "httpsProxy": "http://x:y@14.206.2.26:80",
+     "noProxy": "127.0.0.1,localhost,::1"
+   }
+ }
+}

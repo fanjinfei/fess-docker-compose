@@ -1,0 +1,26 @@
+{
+  "name": "radar-postgraphile",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon -e js,graphql,gql,env src/index.js"
+  },
+  "dependencies": {
+    "body-parser": "1.18.3",
+    "connect-redis": "3.4.0",
+    "express": "4.16.4",
+    "express-session": "1.15.6",
+    "graphile-utils": "4.1.0",
+    "graphql": "14.0.2",
+    "graphql-playground-middleware-express": "1.7.8",
+    "node-fetch": "2.3.0",
+    "openid-client": "2.4.5",
+    "passport": "0.4.0",
+    "pg": "7.7.1",
+    "postgraphile": "4.1.0",
+    "postgraphile-plugin-connection-filter": "1.0.0-beta.22"
+  },
+  "devDependencies": {
+    "nodemon": "1.18.8"
+  }
+}
