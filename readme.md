@@ -16,3 +16,17 @@ Original dockerfile from: https://hub.docker.com/r/codelibs/fess/
       #docker-compose exec search /bin/bash
       then 
       #/var/lib/elasticsearch/bin/save_config.sh
+
+If run on CentOS:
+5. change docker default data directory:
+  /etc/fstab: UUID=<ls -l /dev/disks/by-uuid> /data ext4 defaults,user 0 0
+  File /lib/systemd/system/docker.service: ExecStart=/usr/bin/docker daemon -g /new/path/docker -H fd://
+  systemctl stop docker&& systemctl daemon-reload && systemctl start docker
+
+
+6. prepare permission for docker
+  # sudo usermod -aG docker <user name> -- need to logout
+  #
+  # mkdir -p data/nodes
+  # mkdir -p data/config
+  # sudo chgrp -R 1000 ./data
