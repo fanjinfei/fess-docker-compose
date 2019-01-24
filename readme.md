@@ -30,3 +30,4 @@ If run on CentOS:
   # mkdir -p data/nodes
   # mkdir -p data/config
   # sudo chgrp -R 1000 ./data
+  # sudo chmod -R 0777 ./data -- fix later
