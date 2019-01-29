@@ -1,0 +1,14 @@
+# radar site no_proxy=* 
+- radar_en:
+    name: radar experiment
+    lang: en
+    output_file: /tmp/radar_experiment_en.csv
+    start_links:
+      - https://radar.statcan.gc.ca/api/
+
+- radar_fr:
+    name: radar experiment
+    lang: fr
+    output_file: /tmp/radar_experiment_fr.csv
+    start_links:
+      - https://radar.statcan.gc.ca/api/
