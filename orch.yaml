@@ -1,0 +1,8 @@
+# radar site no_proxy=* 
+- or_en:
+    name: radar experiment
+    lang: en
+    output_file: c:\tmp\radar_experiment_en.csv
+    start_links:
+      - http://localhost:5000/api/graphql
+
