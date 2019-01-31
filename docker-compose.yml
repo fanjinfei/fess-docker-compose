@@ -7,6 +7,9 @@ services:
       - 8080:8080
       - 9200:9200
       - 9300:9300
+#    sysctls:
+#        - vm.max_map_count=262144
+#    privileged: true
     command: /usr/share/fess/run.sh
     volumes:
       - ./conf/fess_config.properties:/etc/fess/fess_config.properties

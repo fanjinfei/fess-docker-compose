@@ -34,7 +34,12 @@ class Crawler():
     query { hackathons(orderBy: ID_ASC) {
   nodes{ id  name description sourceRepositoryId}         } }'''
         print data
-        r = requests.post(url=url, data=data, timeout=10)
+        try:
+            r = requests.post(url=url, data=data, timeout=10)
+        except:
+            s = traceback.format_exc()
+            print url, sid, data, s
+            return None
         if r.status_code != requests.codes.ok:
             print r
             return None
@@ -44,10 +49,12 @@ class Crawler():
         return source['data']['sourceRepositoryById']['charter']
     def process(self):
         print self.conf
+        #last_crawled = datetime.now().isoformat()[:23]+'Z' #str(int(time.time()))
+        last_crawled = datetime.utcnow().isoformat()[:23]+'Z' #str(int(time.time()))
         url = self.conf['start_links'][0]
         #self.get_sourceRepo(url, "7")
         #sys.exit(0)
-        
+        csv_data = []
         data = {  
 #   "operationName":None,
    "variables":{  
@@ -86,14 +93,20 @@ class Crawler():
         if not res: return
         for e in res['data']['experiments']['nodes']:
             sid = e['sourceRepositoryId']
-            print '--'.join([e['id'], e['name'], e['description'], str(sid)])
-            if not sid: continue
-            charter = self.get_sourceRepo(url, str(sid))
-            charter = charter.replace('\n', ' ') if charter else ''
-            charter = charter.replace('\t', ' ')
-            charter = charter.replace('\r', ' ')
-            print charter
-
+            #print '--'.join([e['id'], e['name'], e['description'], str(sid)])
+            charter = ''
+            if sid:
+                charter = self.get_sourceRepo(url, str(sid))
+                charter = charter.replace('\n', ' ') if charter else ''
+                charter = charter.replace('\t', ' ')
+                charter = charter.replace('\r', ' ')
+                #print charter
+            furl = "https://radar.statcan.gc.ca/experiments/"+e['id']
+            last_modified = e['updatedAt'][:23]+'Z'
+            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled]
+            l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
+            csv_data.append(l)
+        write_csv(self.conf['output_file'], csv_data)
 
 def read_config(filename):
     with open(filename) as f:
@@ -104,6 +117,15 @@ def main():
     logging.basicConfig(format='%(asctime)s %(message)s',
                          filename='/tmp/radar_crawler.log', level=logging.INFO) #INFO, DEBUG
     confs = read_config(sys.argv[1])
+    if len(sys.argv) >2:
+        for conf in confs:
+            data = conf.get(sys.argv[2], None)
+            if not data: 
+                continue
+            craw = Crawler(data)
+            craw.process()
+            return
+        return
     for conf in confs:
         for short_name, data in conf.iteritems():
             print '"'+short_name+'"'
