@@ -10,10 +10,11 @@ services:
 #    sysctls:
 #        - vm.max_map_count=262144
 #    privileged: true
-    command: /usr/share/fess/run.sh
+    command: export ES_JAVA_OPTS="-Xms2g -Xmx4g"; /usr/share/fess/run.sh
     volumes:
       - ./conf/fess_config.properties:/etc/fess/fess_config.properties
       - ./conf/doc.json:/usr/share/fess/app/WEB-INF/classes/fess_indices/fess/doc.json
+      - ./conf/admin_searchlist_edit.jsp:/usr/share/fess/app/WEB-INF/view/admin/searchlist/admin_searchlist_edit.jsp
       - ./data/config:/var/lib/elasticsearch/config
       - ./data:/var/lib/elasticsearch
       #config_sync (./config) and nodes
