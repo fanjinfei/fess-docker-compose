@@ -13,6 +13,7 @@ services:
     command: /usr/share/fess/run.sh
     volumes:
       - ./conf/fess_config.properties:/etc/fess/fess_config.properties
+      - ./conf/doc.json:/usr/share/fess/app/WEB-INF/classes/fess_indices/fess/doc.json
       - ./data/config:/var/lib/elasticsearch/config
       - ./data:/var/lib/elasticsearch
       #config_sync (./config) and nodes
