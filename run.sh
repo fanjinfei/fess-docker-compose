@@ -2,6 +2,7 @@
 
 #sudo sysctl -w vm.max_map_count=262144
 ES_LOGFILE=/var/log/elasticsearch/elasticsearch.log
+export ES_JAVA_OPTS="-Xms4g -Xmx4g"
 
 if [ x"$ES_HTTP_URL" = "x" ] ; then
   ES_HTTP_URL=http://localhost:9200
@@ -29,7 +30,7 @@ start_elasticsearch() {
   tail -f ${ES_LOGFILE} &
 
   if [ x"$ES_JAVA_OPTS" != "x" ] ; then
-    echo "ES_JAVA_OPTS=$ES_JAVA_OPTS" >> /etc/default/elasticsearch
+    echo "ES_JAVA_OPTS=\"$ES_JAVA_OPTS\"" >> /etc/default/elasticsearch
   fi
   service elasticsearch start
 

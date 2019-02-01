@@ -501,6 +501,12 @@
         "analyzer": "standard_analyzer",
         "term_vector": "with_positions_offsets"
       },
+      "tag": {
+        "type": "langstring",
+        "lang_field": "lang",
+        "analyzer": "standard_analyzer",
+        "term_vector": "with_positions_offsets"
+      },
       "important_content": {
         "type": "langstring",
         "lang_field": "lang",

@@ -47,11 +47,38 @@ class Crawler():
         #import pdb; pdb.set_trace()
         #print source['data']['sourceRepositoryById']['webUrl']    
         return source['data']['sourceRepositoryById']['charter']
+    def get_tags(self, url):
+        data = {"operationName":None,
+                "query": "{ tags( orderBy:ID_ASC) {nodes {id name}}}"
+                }
+        try:
+            r = requests.post(url=url, data=data, timeout=10)
+        except:
+            s = traceback.format_exc()
+            print url, sid, data, s
+            return None
+        if r.status_code != requests.codes.ok:
+            print r
+            return None
+        source = json.loads(r.text)
+        res = {}
+        for node in source['data']['tags']['nodes']:
+            res[node['id']] = node['name']
+        print res
+        return res
+    def get_etags(self, tags, etags):
+        res = []
+        for tag in etags:
+            tag_name = tags.get(tag['tagId'], None)
+            if tag_name:
+                res.append(tag_name)
+        return res
     def process(self):
         print self.conf
         #last_crawled = datetime.now().isoformat()[:23]+'Z' #str(int(time.time()))
         last_crawled = datetime.utcnow().isoformat()[:23]+'Z' #str(int(time.time()))
         url = self.conf['start_links'][0]
+        tags = self.get_tags(url)
         #self.get_sourceRepo(url, "7")
         #sys.exit(0)
         csv_data = []
@@ -72,6 +99,7 @@ class Crawler():
             fragment ExperimentData on Experiment {
               id
               name
+              experimentTags { nodes {tagId} }
               description
               conclusion
               concludedAt
@@ -101,9 +129,11 @@ class Crawler():
                 charter = charter.replace('\t', ' ')
                 charter = charter.replace('\r', ' ')
                 #print charter
+            etags = e['experimentTags']['nodes']
+            etags = self.get_etags(tags, etags)
             furl = "https://radar.statcan.gc.ca/experiments/"+e['id']
             last_modified = e['updatedAt'][:23]+'Z'
-            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled]
+            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, json.dumps(etags)]
             l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
             csv_data.append(l)
         write_csv(self.conf['output_file'], csv_data)
