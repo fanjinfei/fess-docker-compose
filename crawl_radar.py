@@ -73,6 +73,37 @@ class Crawler():
             if tag_name:
                 res.append(tag_name)
         return res
+    def get_hackathons(self, tags):
+        url = self.conf['start_links'][0]
+        last_crawled = datetime.utcnow().isoformat()[:23]+'Z' #str(int(time.time()))
+        data = { "query": "{ hackathons(orderBy: ID_ASC) { \
+  nodes{ id  name description hackathonTags { nodes {tagId} } updatedAt sourceRepositoryId}         } }"
+        }
+        r = requests.post(url=url, data=data, timeout=10)
+        res = None
+        if r.status_code == requests.codes.ok:
+            print r.text[-200:]
+            res = json.loads(r.text)
+        if not res: return
+        hs = []
+        for e in res['data']['hackathons']['nodes']:
+            sid = e['sourceRepositoryId']
+            last_modified = e['updatedAt'][:23]+'Z'
+            htags = e['hackathonTags']['nodes']
+            htags = self.get_etags(tags, htags)
+            #print '--'.join([e['id'], e['name'], e['description'], str(sid)])
+            charter = ''
+            if sid:
+                charter = self.get_sourceRepo(url, str(sid))
+                charter = charter.replace('\n', ' ') if charter else ''
+                charter = charter.replace('\t', ' ')
+                charter = charter.replace('\r', ' ')
+            furl = "https://radar.statcan.gc.ca/hackthons/"+e['id']
+            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, json.dumps(htags), 'hackathon']
+            l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
+            hs.append(l)
+        print hs
+        return hs
     def process(self):
         print self.conf
         #last_crawled = datetime.now().isoformat()[:23]+'Z' #str(int(time.time()))
@@ -121,6 +152,7 @@ class Crawler():
         if not res: return
         for e in res['data']['experiments']['nodes']:
             sid = e['sourceRepositoryId']
+            print sid
             #print '--'.join([e['id'], e['name'], e['description'], str(sid)])
             charter = ''
             if sid:
@@ -133,9 +165,12 @@ class Crawler():
             etags = self.get_etags(tags, etags)
             furl = "https://radar.statcan.gc.ca/experiments/"+e['id']
             last_modified = e['updatedAt'][:23]+'Z'
-            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, json.dumps(etags)]
+            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, json.dumps(etags), 'experiment']
             l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
             csv_data.append(l)
+        hs = self.get_hackathons(tags)
+        for h in hs:
+            csv_data.append(h)
         write_csv(self.conf['output_file'], csv_data)
 
 def read_config(filename):
