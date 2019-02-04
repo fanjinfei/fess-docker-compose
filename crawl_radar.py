@@ -91,6 +91,11 @@ class Crawler():
             last_modified = e['updatedAt'][:23]+'Z'
             htags = e['hackathonTags']['nodes']
             htags = self.get_etags(tags, htags)
+            if not htags:
+                htags = '[""]'
+            else:
+                htags = json.dumps(htags)
+            
             #print '--'.join([e['id'], e['name'], e['description'], str(sid)])
             charter = ''
             if sid:
@@ -99,7 +104,7 @@ class Crawler():
                 charter = charter.replace('\t', ' ')
                 charter = charter.replace('\r', ' ')
             furl = "https://radar.statcan.gc.ca/hackthons/"+e['id']
-            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, json.dumps(htags), 'hackathon']
+            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, htags, 'hackathon']
             l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
             hs.append(l)
         print hs
@@ -165,7 +170,12 @@ class Crawler():
             etags = self.get_etags(tags, etags)
             furl = "https://radar.statcan.gc.ca/experiments/"+e['id']
             last_modified = e['updatedAt'][:23]+'Z'
-            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, json.dumps(etags), 'experiment']
+            if not etags:
+                etags = '[""]'
+            else:
+                etags = json.dumps(etags)
+            
+            l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, etags, 'experiment']
             l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
             csv_data.append(l)
         hs = self.get_hackathons(tags)
