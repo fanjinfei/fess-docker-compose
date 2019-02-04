@@ -1,0 +1,39 @@
+replicaCount: 1
+
+image:
+  repository: elasticsearch:latest
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+volumeClaim:
+  accessModes:
+    - ReadWriteOnce
+  size: 2Gi
+  storageClass: default
+
+ingress:
+  enabled: false
+  annotations: {}
+  path: /
+  hosts:
+    - inno-search.local
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
