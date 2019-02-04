@@ -1,0 +1,114 @@
+image: alpine:latest
+
+stages:
+  - build
+  - review
+  - production
+  - cleanup
+
+before_script:
+  - source .gitlab-ci-before_script.sh
+
+build:
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://localhost:2375
+  stage: build
+  only:
+    - dev
+    - master
+    - ci
+  script: docker_build .
+
+#build_search:
+#  <<: *docker_build
+#  script: docker_build . esearch6.5.4
+
+deploy_review_app:
+  image: lachlanevenson/k8s-helm:v2.12.3
+  stage: review
+  variables:
+    SEARCH_SECRET: innovation-search-admin
+    IMAGE_PULLSECRETS: artifactory
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://$CI_ENVIRONMENT_SLUG-$INNO_DOMAIN
+    on_stop: stop_review_app
+  only:
+    refs:
+      - dev
+      - ci
+    kubernetes: active
+  script:
+    - helm init --client-only
+    - helm dependency build helm-chart/
+    - helm upgrade --install --force --wait
+      --set image.tag="$CI_COMMIT_SHA"
+      --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
+      --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
+      --set ingress.enabled=true
+      --set ingress.hosts[0]="$CI_ENVIRONMENT_SLUG-$INNO_DOMAIN"
+      --set search.existingSerect="$SEARCH_SECRET"
+      --set search.pullSecrets[0]="$IMAGE_PULLSECRETS"
+      --set search.persistence.size=2Gi
+      --set search.registry="$ARTIFACTORY_URL/docker-remote"
+      --namespace="$KUBE_NAMESPACE"
+      --version="$CI_PIPELINE_ID-$CI_JOB_ID"
+      "innovation-search-$CI_ENVIRONMENT_SLUG"
+      helm-chart/
+
+deploy_production_app:
+  image: lachlanevenson/k8s-helm:v2.12.3
+  stage: production
+  variables:
+    SEARCH_SECRET: innovation-search-production
+    IMAGE_PULLSECRETS: artifactory
+  environment:
+    name: production
+    url: http://$PROD_INGRESS_HOST
+  only:
+    refs:
+      - master
+    kubernetes: active
+  script:
+    - helm init --client-only
+    - helm dependency build helm-chart/
+    - helm upgrade --install --force --wait
+      --set image.tag="$CI_COMMIT_SHA"
+      --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
+      --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
+      --set ingress.enabled=true
+      --set ingress.hosts[0]="$PROD_INGRESS_HOST"
+      --set search.existingSerect="$SEARCH_SECRET"
+      --set search.pullSecrets[0]="$IMAGE_PULLSECRETS"
+      --set search.persistence.size=2Gi
+      --set search.registry="$ARTIFACTORY_URL/docker-remote"
+      --namespace="$KUBE_NAMESPACE"
+      --version="$CI_PIPELINE_ID-$CI_JOB_ID"
+      "innovation-search-production"
+      helm-chart/
+
+stop_review_app:
+  image: lachlanevenson/k8s-helm:v2.12.3
+  stage: cleanup
+  when: manual
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  script:
+    - helm init --client-only
+    - helm delete --purge innovation-search-$CI_ENVIRONMENT_SLUG
+
+delete_pvc_review_app:
+  image: lachlanevenson/k8s-kubectl:v1.12.5
+  stage: cleanup
+  when: manual
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  script:
+    - kubectl delete pvc data-innovation-search-$CI_ENVIRONMENT_SLUG-0 --namespace="$KUBE_NAMESPACE"
+
