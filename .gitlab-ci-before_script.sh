@@ -73,10 +73,6 @@ function docker_build {
   docker_login
 
   local image_name="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
-  # Add the component name if specified.
-  if [[ -n "$2" ]]; then
-    image_name="$image_name/$2"
-  fi
   #image_name="$image_name/pre-release:$CI_COMMIT_SHA"
 
   echo "Build image $image_name…"
@@ -84,7 +80,7 @@ function docker_build {
   --build-arg REPO_PREFIX="$ARTIFACTORY_URL/docker-remote/"
 
   echo "Push image $image_name…"
-  docker push "$image_name"
+  docker push "$image_name:latest"
 }
 
 # Push production images to the CI Docker registry. The specified components
