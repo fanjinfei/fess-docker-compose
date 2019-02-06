@@ -49,8 +49,6 @@ deploy_review_app:
       --set image.tag="$CI_COMMIT_SHA"
       --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
       --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
-#      --set ingress.enabled=true
-#      --set ingress.hosts[0]="$CI_ENVIRONMENT_SLUG-$INNO_DOMAIN"
       --set search.existingSerect="$SEARCH_SECRET"
       --set search.pullSecrets[0]="$IMAGE_PULLSECRETS"
       --set search.persistence.size=2Gi
@@ -68,7 +66,6 @@ deploy_production_app:
     IMAGE_PULLSECRETS: artifactory
   environment:
     name: production
-#    url: http://$PROD_INGRESS_HOST
   only:
     refs:
       - master
@@ -80,8 +77,6 @@ deploy_production_app:
       --set image.tag="$CI_COMMIT_SHA"
       --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
       --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
-#      --set ingress.enabled=true
-#      --set ingress.hosts[0]="$PROD_INGRESS_HOST"
       --set search.existingSerect="$SEARCH_SECRET"
       --set search.pullSecrets[0]="$IMAGE_PULLSECRETS"
       --set search.persistence.size=2Gi
