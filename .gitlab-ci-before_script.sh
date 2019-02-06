@@ -80,6 +80,7 @@ function docker_build {
   --build-arg REPO_PREFIX="$ARTIFACTORY_URL/docker-remote/"
 
   echo "Push image $image_name…"
+  docker push "$image_name:$CI_COMMIT_SHA"
   docker push "$image_name:latest"
 }
 
