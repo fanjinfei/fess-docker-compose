@@ -26,12 +26,12 @@ spec:
           env:
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - mountPath: /app/App_Data
+          - mountPath: /var/lib/elasticsearch
             name: volume
 {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
