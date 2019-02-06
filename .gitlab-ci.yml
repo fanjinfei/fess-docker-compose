@@ -68,7 +68,7 @@ deploy_production_app:
     IMAGE_PULLSECRETS: artifactory
   environment:
     name: production
-    url: http://$PROD_INGRESS_HOST
+#    url: http://$PROD_INGRESS_HOST
   only:
     refs:
       - master
