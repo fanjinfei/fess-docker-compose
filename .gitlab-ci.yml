@@ -21,7 +21,7 @@ build:
     - dev
     - master
     - ci
-  script: .
+  script: source .gitlab-ci-before_script.sh
 
 #build_search:
 #  <<: *docker_build
