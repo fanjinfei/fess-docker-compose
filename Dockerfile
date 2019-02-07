@@ -38,9 +38,7 @@ RUN set -x && \
     dpkg -i /tmp/fess-${FESS_VERSION}.deb && \
     rm -rf /tmp/fess-${FESS_VERSION}.deb
 #RUN export  ANT_OPTS="-Dhttp.proxyHost=12.26.2.2 -Dhttp.proxyPort=80 -Dhttp.proxyUser=x -Dhttp.proxyPassword=y" 
-#RUN sed -i '10 a <setproxy proxyhost="12.26.2.2" proxyport="80" proxyuser="x" proxypassword="y" />' /usr/share/fess/bin/plugin.xml
-RUN export  ANT_OPTS="-Dhttp.proxyHost=12.26.2.2 -Dhttp.proxyPort=80 -Dhttp.proxyUser=x -Dhttp.proxyPassword=y" && \
-    ant -f /usr/share/fess/bin/plugin.xml -Dtarget.dir=/tmp \
+RUN ant -f /usr/share/fess/bin/plugin.xml -Dtarget.dir=/tmp \
     -Dplugins.dir=/usr/share/elasticsearch/plugins install.plugins && \
     rm -rf /tmp/elasticsearch-*
 RUN mkdir /opt/fess && \
@@ -48,16 +46,17 @@ RUN mkdir /opt/fess && \
     sed -i -e 's#FESS_CLASSPATH="$FESS_CONF_PATH:$FESS_CLASSPATH"#FESS_CLASSPATH="$FESS_OVERRIDE_CONF_PATH:$FESS_CONF_PATH:$FESS_CLASSPATH"#g' /usr/share/fess/bin/fess
 RUN echo "export FESS_APP_TYPE=$FESS_APP_TYPE" >>  /usr/share/fess/bin/fess.in.sh
 RUN echo "export FESS_OVERRIDE_CONF_PATH=/opt/fess" >>  /usr/share/fess/bin/fess.in.sh
-RUN sed -i 's/8080/80/g' /usr/share/fess/bin/fess.in.sh
-RUN sed -i 's/FESS_USER=fess/FESS_USER=root/g' /etc/init.d/fess
-RUN sed -i 's/FESS_GROUP=fess/FESS_GROUP=root/g' /etc/init.d/fess
+#RUN sed -i 's/8080/80/g' /usr/share/fess/bin/fess.in.sh
+#RUN sed -i 's/FESS_USER=fess/FESS_USER=root/g' /etc/init.d/fess
+#RUN sed -i 's/FESS_GROUP=fess/FESS_GROUP=root/g' /etc/init.d/fess
 
-RUN usermod -a -G root fess
+#RUN usermod -a -G root fess
+#RUN usermod -a -G root elasticsearch
 
 COPY elasticsearch/config /etc/elasticsearch
 
 WORKDIR /usr/share/fess
-EXPOSE 80 9200 9300
+EXPOSE 8080 9200 9300
 
 USER root
 COPY run.sh /usr/share/fess/run.sh

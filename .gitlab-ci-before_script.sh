@@ -55,6 +55,12 @@ function docker_login {
   fi
 }
 
+function docker_pull {
+  docker_login
+  local image_name="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
+  docker pull "$image_name:latest"
+}
+
 # Build a docker image at the specified path. A default Dockerfile is assumed to
 # be present at the root of that path. Additionally, a component name may be
 # specified which will be appended to the resulting image name.

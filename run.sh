@@ -2,7 +2,7 @@
 
 #sudo sysctl -w vm.max_map_count=262144
 ES_LOGFILE=/var/log/elasticsearch/elasticsearch.log
-export ES_JAVA_OPTS="-Xms2g -Xmx2g"
+export ES_JAVA_OPTS="-Xms3g -Xmx3g"
 echo "FESS_JAVA_OPTS=\"-Xms1g -Xmx1g\"" >> /etc/default/fess
 
 if [ x"$ES_HTTP_URL" = "x" ] ; then
