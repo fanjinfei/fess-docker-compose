@@ -27,7 +27,6 @@ RUN groupadd -g 1000 elasticsearch && \
     useradd -u 1000 elasticsearch -g elasticsearch && \
     useradd -u 1001 fess -g fess
 
-
 RUN set -x && \
     wget --progress=dot:mega ${ES_DOWNLOAD_URL}/elasticsearch-oss-${ELASTIC_VERSION}.deb \
       -O /tmp/elasticsearch-${ELASTIC_VERSION}.deb && \
@@ -49,11 +48,16 @@ RUN mkdir /opt/fess && \
     sed -i -e 's#FESS_CLASSPATH="$FESS_CONF_PATH:$FESS_CLASSPATH"#FESS_CLASSPATH="$FESS_OVERRIDE_CONF_PATH:$FESS_CONF_PATH:$FESS_CLASSPATH"#g' /usr/share/fess/bin/fess
 RUN echo "export FESS_APP_TYPE=$FESS_APP_TYPE" >>  /usr/share/fess/bin/fess.in.sh
 RUN echo "export FESS_OVERRIDE_CONF_PATH=/opt/fess" >>  /usr/share/fess/bin/fess.in.sh
+RUN sed -i 's/8080/80/g' /usr/share/fess/bin/fess.in.sh
+RUN sed -i 's/FESS_USER=fess/FESS_USER=root/g' /etc/init.d/fess
+RUN sed -i 's/FESS_GROUP=fess/FESS_GROUP=root/g' /etc/init.d/fess
+
+RUN usermod -a -G root fess
 
 COPY elasticsearch/config /etc/elasticsearch
 
 WORKDIR /usr/share/fess
-EXPOSE 8080 9200 9300
+EXPOSE 80 9200 9300
 
 USER root
 COPY run.sh /usr/share/fess/run.sh

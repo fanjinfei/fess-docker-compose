@@ -4,7 +4,7 @@ services:
     image: codelibs/fess:fess12.4.3
     working_dir: /usr/share/fess
     ports:
-      - 8080:8080
+      - 80:80
       - 9200:9200
       - 9300:9300
 #    sysctls:
