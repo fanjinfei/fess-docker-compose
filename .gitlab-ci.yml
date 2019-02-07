@@ -43,10 +43,11 @@ deploy_review_app:
       - ci
     kubernetes: active
   script:
+    - echo "$CI_COMMIT_SHA" 
     - helm init --client-only
     - helm dependency build helm-chart/
     - helm upgrade --install --force --wait
-      --set image.tag="latest"
+      --set image.tag="397a4624dcd6400926290fbc75a46328a843d5da9ac2e29fc054f640ed93151a"
       --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
       --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
       --set ingress.enabled=true
