@@ -21,7 +21,7 @@ build:
     - dev
     - master
     - ci
-  script: docker_login
+  script: docker_build .
 
 #build_search:
 #  <<: *docker_build
@@ -47,7 +47,7 @@ deploy_review_app:
     - helm init --client-only
     - helm dependency build helm-chart/
     - helm upgrade --install --force --wait
-      --set image.tag="397a4624dcd6400926290fbc75a46328a843d5da9ac2e29fc054f640ed93151a"
+      --set image.tag="$CI_COMMIT_SHA"
       --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
       --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
       --set ingress.enabled=true
@@ -79,7 +79,7 @@ deploy_production_app:
     - helm init --client-only
     - helm dependency build helm-chart/
     - helm upgrade --install --force --wait
-      --set image.tag="aa9b5132d23b7fb0be6cd8f56e3703f9f1081d39"
+      --set image.tag="$CI_COMMIT_SHA"
       --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
       --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
       --set ingress.enabled=true
