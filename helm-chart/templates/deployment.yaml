@@ -49,6 +49,13 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+      initContainers:
+      - name: "sysctl"
+        image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+        imagePullPolicy: {{ .Values.initImage.pullPolicy | quote }}
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true      
   volumeClaimTemplates:
     - metadata:
         name: volume

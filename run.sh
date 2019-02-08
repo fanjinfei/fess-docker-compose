@@ -4,6 +4,7 @@
 ES_LOGFILE=/var/log/elasticsearch/elasticsearch.log
 export ES_JAVA_OPTS="-Xms3g -Xmx3g"
 echo "FESS_JAVA_OPTS=\"-Xms1g -Xmx1g\"" >> /etc/default/fess
+chmod -R 777 /var/lib/elasticsearch
 
 if [ x"$ES_HTTP_URL" = "x" ] ; then
   ES_HTTP_URL=http://localhost:9200
