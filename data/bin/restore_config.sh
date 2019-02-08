@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/bash
 
 PING_INTERVAL=10
 while [ 1 ] ; do

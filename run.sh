@@ -104,8 +104,8 @@ if [ x"$RUN_FESS" != "xfalse" ] ; then
 fi
 
 #restore fess config saved as index in elasticsearch; crawler
-sh /var/lib/elasticsearch/bin/restore_config.sh
-sh /var/lib/elasticsearch/bin/crawler.sh &
+/var/lib/elasticsearch/bin/restore_config.sh
+/var/lib/elasticsearch/bin/crawler.sh &
 
 if [ x"$RUN_SHELL" = "xtrue" ] ; then
   /bin/bash
