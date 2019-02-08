@@ -64,16 +64,15 @@ USER root
 COPY run.sh /usr/share/fess/run.sh
 RUN chmod +x /usr/share/fess/run.sh
 
-RUN mkdir /var/lib/elasticsearch/backup
-RUN mkdir /var/lib/elasticsearch/bin
-RUN mkdir -p /var/lib/elasticsearch/csv/experiments
+RUN mkdir -p /usr/share/fess/config/backup
+RUN mkdir -p /usr/share/fess/config/bin
 COPY conf/fess_config.properties /etc/fess/fess_config.properties
 COPY conf/admin_searchlist_edit.jsp /usr/share/fess/app/WEB-INF/view/admin/searchlist/admin_searchlist_edit.jsp
 COPY conf/doc.json /usr/share/fess/app/WEB-INF/classes/fess_indices/fess/doc.json
-COPY data/backup /var/lib/elasticsearch/backup
-COPY data/bin /var/lib/elasticsearch/bin
-COPY crawl*.py /var/lib/elasticsearch/bin/
-COPY radar.yaml /var/lib/elasticsearch/bin/
+COPY data/backup /usr/share/fess/config/backup
+COPY data/bin /usr/share/fess/config/bin
+COPY crawl*.py /usr/share/fess/config/bin/
+COPY radar.yaml /usr/share/fess/config/bin/
 
 #RUN sysctl -w vm.max_map_count=262144
 ENTRYPOINT /usr/share/fess/run.sh

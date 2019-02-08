@@ -4,6 +4,12 @@
 ES_LOGFILE=/var/log/elasticsearch/elasticsearch.log
 export ES_JAVA_OPTS="-Xms3g -Xmx3g"
 echo "FESS_JAVA_OPTS=\"-Xms1g -Xmx1g\"" >> /etc/default/fess
+mkdir -p /var/lib/elasticsearch/backup
+mkdir -p /var/lib/elasticsearch/bin
+mkdir -p /var/lib/elasticsearch/csv/experiments
+
+cp -rf /usr/share/fess/config/backup/* /var/lib/elasticsearch/backup/
+cp -rf /usr/share/fess/config/bin/* /var/lib/elasticsearch/bin/
 chmod -R 777 /var/lib/elasticsearch
 
 if [ x"$ES_HTTP_URL" = "x" ] ; then
