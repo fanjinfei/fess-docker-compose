@@ -37,7 +37,6 @@ RUN set -x && \
     wget --progress=dot:mega https://github.com/codelibs/fess/releases/download/fess-${FESS_VERSION}/fess-${FESS_VERSION}.deb -O /tmp/fess-${FESS_VERSION}.deb && \
     dpkg -i /tmp/fess-${FESS_VERSION}.deb && \
     rm -rf /tmp/fess-${FESS_VERSION}.deb
-#RUN export  ANT_OPTS="-Dhttp.proxyHost=12.26.2.2 -Dhttp.proxyPort=80 -Dhttp.proxyUser=x -Dhttp.proxyPassword=y" 
 RUN ant -f /usr/share/fess/bin/plugin.xml -Dtarget.dir=/tmp \
     -Dplugins.dir=/usr/share/elasticsearch/plugins install.plugins && \
     rm -rf /tmp/elasticsearch-*
@@ -55,11 +54,26 @@ RUN echo "export FESS_OVERRIDE_CONF_PATH=/opt/fess" >>  /usr/share/fess/bin/fess
 
 COPY elasticsearch/config /etc/elasticsearch
 
+RUN curl https://bootstrap.pypa.io/get-pip.py | python && \
+    pip install flask unicodecsv requests python-dateutil PyYAML
+
 WORKDIR /usr/share/fess
 EXPOSE 8080 9200 9300
 
 USER root
 COPY run.sh /usr/share/fess/run.sh
 RUN chmod +x /usr/share/fess/run.sh
+
+RUN mkdir /var/lib/elasticsearch/backup
+RUN mkdir /var/lib/elasticsearch/bin
+RUN mkdir -p /var/lib/elasticsearch/csv/experiments
+COPY conf/fess_config.properties /etc/fess/fess_config.properties
+COPY conf/admin_searchlist_edit.jsp /usr/share/fess/app/WEB-INF/view/admin/searchlist/admin_searchlist_edit.jsp
+COPY conf/doc.json /usr/share/fess/app/WEB-INF/classes/fess_indices/fess/doc.json
+COPY data/backup /var/lib/elasticsearch/backup
+COPY data/bin /var/lib/elasticsearch/bin
+COPY crawl*.py /var/lib/elasticsearch/bin/
+COPY radar.yaml /var/lib/elasticsearch/bin/
+
 #RUN sysctl -w vm.max_map_count=262144
 ENTRYPOINT /usr/share/fess/run.sh

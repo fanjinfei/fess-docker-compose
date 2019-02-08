@@ -1,5 +1,15 @@
 #!bin/sh
 
+PING_INTERVAL=10
+while [ 1 ] ; do
+      STATUS=`curl -w '%{http_code}\n' -s -o /dev/null http://localhost:8080/json/ping`
+      if [ x"$STATUS" = x200 ] ; then
+        break
+      else
+        sleep $PING_INTERVAL
+      fi
+done
+
 rm -rf /tmp/config
 mkdir -p /tmp/config
 cp -f /var/lib/elasticsearch/backup/* /tmp/config/
