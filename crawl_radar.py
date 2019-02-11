@@ -55,7 +55,7 @@ class Crawler():
             r = requests.post(url=url, data=data, timeout=10)
         except:
             s = traceback.format_exc()
-            print url, sid, data, s
+            print url, s
             return None
         if r.status_code != requests.codes.ok:
             print r

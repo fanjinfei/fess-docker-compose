@@ -105,13 +105,13 @@ fi
 
 curl --retry 30 --retry-connrefused -XGET "$ES_HTTP_URL/_cluster/health?wait_for_status=yellow&timeout=3m"
 
+#restore fess config saved as index in elasticsearch; crawler
+/var/lib/elasticsearch/bin/restore_config.sh
+/var/lib/elasticsearch/bin/crawler.sh  >>/var/log/fess/fess-crawler.log 2>&1 </dev/null &
+
 if [ x"$RUN_FESS" != "xfalse" ] ; then
   start_fess
 fi
-
-#restore fess config saved as index in elasticsearch; crawler
-/var/lib/elasticsearch/bin/restore_config.sh
-/var/lib/elasticsearch/bin/crawler.sh &
 
 if [ x"$RUN_SHELL" = "xtrue" ] ; then
   /bin/bash
