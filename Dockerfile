@@ -37,6 +37,7 @@ RUN set -x && \
     wget --progress=dot:mega https://github.com/codelibs/fess/releases/download/fess-${FESS_VERSION}/fess-${FESS_VERSION}.deb -O /tmp/fess-${FESS_VERSION}.deb && \
     dpkg -i /tmp/fess-${FESS_VERSION}.deb && \
     rm -rf /tmp/fess-${FESS_VERSION}.deb
+RUN sed -i '10 a <setproxy proxyhost="142.206.2.25" proxyport="80" proxyuser="fanjinf" proxypassword="Xinyun99" />' /usr/share/fess/bin/plugin.xml
 RUN ant -f /usr/share/fess/bin/plugin.xml -Dtarget.dir=/tmp \
     -Dplugins.dir=/usr/share/elasticsearch/plugins install.plugins && \
     rm -rf /tmp/elasticsearch-*
@@ -55,10 +56,10 @@ RUN echo "export FESS_OVERRIDE_CONF_PATH=/opt/fess" >>  /usr/share/fess/bin/fess
 COPY elasticsearch/config /etc/elasticsearch
 
 RUN curl https://bootstrap.pypa.io/get-pip.py | python && \
-    pip install flask unicodecsv requests python-dateutil PyYAML
+    pip install flask unicodecsv requests python-dateutil PyYAML gunicorn gevent flask_paginate flask_babel flask_compress
 
 WORKDIR /usr/share/fess
-EXPOSE 8080 9200 9300
+EXPOSE 8090 8080 9200 9300
 
 USER root
 COPY run.sh /usr/share/fess/run.sh

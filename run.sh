@@ -103,7 +103,7 @@ if [ x"$RUN_ELASTICSEARCH" != "xfalse" ] ; then
   start_elasticsearch
 fi
 
-curl --retry 30 --retry-connrefused -XGET "$ES_HTTP_URL/_cluster/health?wait_for_status=yellow&timeout=3m"
+curl --retry 30 --retry-delay 3 --retry-connrefused -XGET "$ES_HTTP_URL/_cluster/health?wait_for_status=yellow&timeout=3m"
 
 if [ x"$RUN_FESS" != "xfalse" ] ; then
   start_fess
@@ -111,6 +111,7 @@ fi
 
 #restore fess config saved as index in elasticsearch; crawler
 /var/lib/elasticsearch/bin/restore_config.sh
+gunicorn --reload -w 4 --bind=:8090 --chdir /var/lib/elasticsearch/bin --daemon search:app
 /var/lib/elasticsearch/bin/crawler.sh  >>/var/log/fess/fess-crawler.log 2>&1 </dev/null &
 
 service fess restart

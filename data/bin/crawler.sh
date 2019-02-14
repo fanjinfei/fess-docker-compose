@@ -8,6 +8,8 @@ while [ 1 ] ; do
         python /var/lib/elasticsearch/bin/crawl_radar.py /var/lib/elasticsearch/bin/radar.yaml radar_en
         mv /tmp/radar_experiment_en.csv /var/lib/elasticsearch/csv/experiments/
         chmod -R 777  /var/lib/elasticsearch/csv
+      else
+        service fess restart
       fi
         sleep $PING_INTERVAL
 done

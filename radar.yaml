@@ -4,7 +4,8 @@
     lang: en
     output_file: /tmp/radar_experiment_en.csv
     start_links:
-      - https://radar.statcan.gc.ca/api/
+      - http://production-innovation-radar-client.innovation-radar.svc.cluster.local/api/
+#      - https://radar.statcan.gc.ca/api/
 
 - radar_fr:
     name: radar experiment
