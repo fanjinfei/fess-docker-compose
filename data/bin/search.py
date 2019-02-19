@@ -158,7 +158,7 @@ def _get_search_post(q, start_page=1, page_size=20, labels=None, burl=None, lang
 
     print (burl, payload)
     user_agent = {'User-agent': 'statcan search'}
-    r = requests.post(url=burl, headers=user_agent, data=payload, timeout=10)
+    r = requests.post(url=burl, headers=user_agent, data=payload, timeout=3)
     if r.status_code == requests.codes.ok:
         print r.text[-200:]
         return r.text
@@ -236,7 +236,7 @@ def proxy(path):
   s = requests.Session()
   try:
       if request.method == 'GET':
-        res = s.get('{end_point}/{path}'.format(end_point=end_point, path=path), cookies=dj)
+        res = s.get('{end_point}/{path}'.format(end_point=end_point, path=path), cookies=dj, timeout=3)
         if "NotfoundAction_index_Form" in res.content or res.status_code != requests.codes.ok:
             return "Not found", 404
         response = make_response(res.content, 200)
@@ -246,7 +246,7 @@ def proxy(path):
         return response
       else:
         data = request.form
-        res =  s.post('{end_point}/{path}'.format(end_point=end_point, path=path), data=data, cookies=dj)
+        res =  s.post('{end_point}/{path}'.format(end_point=end_point, path=path), data=data, cookies=dj, timeout=3)
         response = make_response(res.content, 200)
         for k,v in dict(s.cookies).items():
             response.set_cookie(k,v)
