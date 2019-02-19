@@ -32,8 +32,8 @@ mimetypes.add_type('image/svg+xml', '.svg')
 #print 'sys argv ', sys.argv, os.environ['ECN_CONFIG']
 
 #// url:'https://www120.statcan.gc.ca/stcsr/en/cm1/cls?fq=ds%3A102noc2016&start=0&showSum=show&q=orign&wt=json'
-#end_point = 'http://localhost:8080'
-end_point = 'https://innovation-search-production.inno.cloud.statcan.ca'
+end_point = 'http://localhost:8080'
+#end_point = 'https://innovation-search-production.inno.cloud.statcan.ca'
 
 
 app = Flask(__name__, template_folder="./")
@@ -236,7 +236,7 @@ def proxy(path):
   s = requests.Session()
   try:
       if request.method == 'GET':
-        res = s.get('https://innovation-search-production.inno.cloud.statcan.ca/{path}'.format(path=path), cookies=dj)
+        res = s.get('{end_point}/{path}'.format(end_point=end_point, path=path), cookies=dj)
         if "NotfoundAction_index_Form" in res.content or res.status_code != requests.codes.ok:
             return "Not found", 404
         response = make_response(res.content, 200)
@@ -246,7 +246,7 @@ def proxy(path):
         return response
       else:
         data = request.form
-        res =  s.post('https://innovation-search-production.inno.cloud.statcan.ca/{path}'.format(path=path), data=data, cookies=dj)
+        res =  s.post('{end_point}/{path}'.format(end_point=end_point, path=path), data=data, cookies=dj)
         response = make_response(res.content, 200)
         for k,v in dict(s.cookies).items():
             response.set_cookie(k,v)
