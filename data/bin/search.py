@@ -240,7 +240,8 @@ def proxy(path):
         if "NotfoundAction_index_Form" in res.content or res.status_code != requests.codes.ok:
             return "Not found", 404
         response = make_response(res.content, 200)
-        response.headers['Content-type'] = res.headers['Content-type']
+        if res.headers.get('Content-type', None):
+          response.headers['Content-type'] = res.headers['Content-type']
         for k,v in dict(s.cookies).items():
             response.set_cookie(k,v)
         return response
@@ -252,6 +253,8 @@ def proxy(path):
             response.set_cookie(k,v)
         return response
   except:
+        import traceback
+        traceback.print_exc()
         return  "Not found", 404
 
 def test():
