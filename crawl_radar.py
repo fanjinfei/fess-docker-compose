@@ -76,21 +76,24 @@ class Crawler():
     def get_hackathons(self, tags):
         url = self.conf['start_links'][0]
         last_crawled = datetime.utcnow().isoformat()[:23]+'Z' #str(int(time.time()))
-        data = { "query": "{ hackathons(orderBy: ID_ASC) { \
-  nodes{ id  name description hackathonTags { nodes {tagId} } updatedAt sourceRepositoryId}         } }"
+        data = { "query": '''
+{ studies(orderBy: CREATED_AT_DESC, filter: {hackathon: {id: {isNull: false}}}) { nodes { ...HackathonWithTags __typename } __typename } } fragment HackathonWithTags on Study { ...StudyDataWithTags ...HackathonData __typename } fragment HackathonData on Study { hackathon { id startDate endDate __typename } __typename } fragment StudyDataWithTags on Study { ...StudyData ...StudyTags __typename } fragment StudyData on Study { id name description createdBy createdAt updatedAt sourceRepositoryId __typename } fragment StudyTags on Study { tags { nodes { id name __typename } __typename } __typename }        
+        '''
         }
         r = requests.post(url=url, data=data, timeout=10)
         res = None
         if r.status_code == requests.codes.ok:
             print r.text[-200:]
             res = json.loads(r.text)
-        if not res: return
+        if not res: 
+            print "not found any hackathons"
+            return []
         hs = []
-        for e in res['data']['hackathons']['nodes']:
+        for e in res['data']['studies']['nodes']:
             sid = e['sourceRepositoryId']
             last_modified = e['updatedAt'][:23]+'Z'
-            htags = e['hackathonTags']['nodes']
-            htags = self.get_etags(tags, htags)
+            htags = e['tags']['nodes']
+            htags = [ n['name'] for n in htags]
             if not htags:
                 htags = '[""]'
             else:
@@ -114,7 +117,9 @@ class Crawler():
         #last_crawled = datetime.now().isoformat()[:23]+'Z' #str(int(time.time()))
         last_crawled = datetime.utcnow().isoformat()[:23]+'Z' #str(int(time.time()))
         url = self.conf['start_links'][0]
+
         tags = self.get_tags(url)
+        hs = self.get_hackathons(tags)
         #self.get_sourceRepo(url, "7")
         #sys.exit(0)
         csv_data = []
@@ -123,28 +128,7 @@ class Crawler():
    "variables":{  
 
    },
-   "query":'''{ experiments(orderBy: CREATED_AT_DESC) {
-                nodes {
-                  ...ExperimentData
-                  __typename
-                }
-                __typename
-              }
-            }
-
-            fragment ExperimentData on Experiment {
-              id
-              name
-              experimentTags { nodes {tagId} }
-              description
-              conclusion
-              concludedAt
-              createdBy
-              createdAt
-              updatedAt
-              sourceRepositoryId
-              __typename
-            }
+   "query":'''{ studies(orderBy: CREATED_AT_DESC, filter: {experiment: {id: {isNull: false}}}) { nodes { ...ExperimentWithTags __typename } __typename } } fragment ExperimentWithTags on Study { ...StudyDataWithTags ...ExperimentData __typename } fragment ExperimentData on Study { experiment { id conclusion concludedAt __typename } __typename } fragment StudyDataWithTags on Study { ...StudyData ...StudyTags __typename } fragment StudyData on Study { id name description createdBy createdAt updatedAt sourceRepositoryId __typename } fragment StudyTags on Study { tags { nodes { id name __typename } __typename } __typename }
         '''
 }
         #data = json.loads(data)
@@ -154,8 +138,10 @@ class Crawler():
         if r.status_code == requests.codes.ok:
             print r.text[-200:]
             res = json.loads(r.text)
-        if not res: return
-        for e in res['data']['experiments']['nodes']:
+        if not res:
+            print r
+            return
+        for e in res['data']['studies']['nodes']:
             sid = e['sourceRepositoryId']
             print sid
             #print '--'.join([e['id'], e['name'], e['description'], str(sid)])
@@ -166,8 +152,8 @@ class Crawler():
                 charter = charter.replace('\t', ' ')
                 charter = charter.replace('\r', ' ')
                 #print charter
-            etags = e['experimentTags']['nodes']
-            etags = self.get_etags(tags, etags)
+            etags = e['tags']['nodes']
+            etags = [ n['name'] for n in etags]
             furl = "https://radar.statcan.gc.ca/experiments/"+e['id']
             last_modified = e['updatedAt'][:23]+'Z'
             if not etags:
@@ -178,7 +164,6 @@ class Crawler():
             l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, etags, 'experiment']
             l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
             csv_data.append(l)
-        hs = self.get_hackathons(tags)
         for h in hs:
             csv_data.append(h)
         write_csv(self.conf['output_file'], csv_data)
