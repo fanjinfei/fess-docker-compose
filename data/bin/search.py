@@ -236,10 +236,11 @@ def proxy(path):
   s = requests.Session()
   try:
       if request.method == 'GET':
-        res = s.get('{end_point}/{path}'.format(end_point=end_point, path=path), cookies=dj, timeout=3)
+        params = urllib.urlencode(request.args)
+        res = s.get('{end_point}/{path}?{query}'.format(end_point=end_point, path=path, query=params), cookies=dj, timeout=3)
         if "NotfoundAction_index_Form" in res.content or res.status_code != requests.codes.ok:
             return "Not found", 404
-        response = make_response(res.content, 200)
+        response = make_response(res.content, res.status_code)
         if res.headers.get('Content-type', None):
           response.headers['Content-type'] = res.headers['Content-type']
         for k,v in dict(s.cookies).items():

@@ -106,7 +106,7 @@ class Crawler():
                 charter = charter.replace('\n', ' ') if charter else ''
                 charter = charter.replace('\t', ' ')
                 charter = charter.replace('\r', ' ')
-            furl = "https://radar.statcan.gc.ca/hackthons/"+e['id']
+            furl = "https://radar.statcan.gc.ca/hackathons/"+e['id']
             l = [furl, e['name'], e['description'], 'en', last_modified, last_crawled, htags, 'hackathon']
             l = [ i.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ') if i else '' for i in l]
             hs.append(l)
