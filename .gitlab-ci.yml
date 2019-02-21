@@ -79,7 +79,7 @@ deploy_production_app:
     - helm init --client-only
     - helm dependency build helm-chart/
     - helm upgrade --install --force --wait
-      --set image.tag="latest"
+      --set image.tag="$CI_COMMIT_SHA"
       --set image.repository="$ARTIFACTORY_URL/$ARTIFACTORY_REPOSITORY"
       --set imagePullSecrets[0].name="$IMAGE_PULLSECRETS"
       --set ingress.enabled=true
