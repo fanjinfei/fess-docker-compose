@@ -131,6 +131,24 @@ def js_page(page_name):
     return _send_static(page_name)
 '''
 
+@app.route("/asuggest", methods=['GET'])
+@crossdomain(origin='*')
+def suggest():
+    qval = request.args.get('query')
+    url = end_point+u'/suggest?query={0}&fields=_default,content,title&num=10'.format(qval)
+    res = []
+    try:
+        r = requests.get(url=url, timeout=2)
+        print "TO FESS suggest", url
+        if r.status_code == requests.codes.ok:
+            rjhits= json.loads(r.text)
+            res = rjhits['response']['result'].get('hits', [])
+    except:
+        import traceback
+        traceback.print_exc()
+    rtext = json.dumps(res)
+    return rtext
+    
 date_range = {
     "timestamp:[now-1d/d TO *]":[0,'Past 24 Hours'],
     "timestamp:[now-7d/d TO *]":[1,'Past Week'],
@@ -237,12 +255,17 @@ def proxy(path):
   try:
       if request.method == 'GET':
         params = urllib.urlencode(request.args)
-        res = s.get('{end_point}/{path}?{query}'.format(end_point=end_point, path=path, query=params), cookies=dj, timeout=3)
-        if "NotfoundAction_index_Form" in res.content or res.status_code != requests.codes.ok:
+        res = s.get('{end_point}/{path}?{query}'.format(end_point=end_point, path=path, query=params), cookies=dj, timeout=8,
+            allow_redirects=(False if path!='go' else True))
+        if "NotfoundAction_index_Form" in res.content:
             return "Not found", 404
         response = make_response(res.content, res.status_code)
         if res.headers.get('Content-type', None):
           response.headers['Content-type'] = res.headers['Content-type']
+        if res.headers.get('Location', None):
+          response.headers['Location'] = res.headers['Location']
+        if res.headers.get('Set-Cookie', None):
+          response.headers['Set-Cookie'] = res.headers['Set-Cookie']
         for k,v in dict(s.cookies).items():
             response.set_cookie(k,v)
         return response
@@ -257,7 +280,15 @@ def proxy(path):
         import traceback
         traceback.print_exc()
         return  "Not found", 404
-
+        
+@app.route('/', methods=['POST', 'GET'])
+def root_search():
+    res = requests.get(end_point+'/')
+    response = make_response(res.content, res.status_code)
+    #response.headers = res.headers
+    print res, end_point
+    return response
+    
 def test():
     print _get_search_post('data', 1, 20, '',
                           end_point+'/json/', 'en', '', '')    
