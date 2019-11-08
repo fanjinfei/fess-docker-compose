@@ -112,7 +112,7 @@ fi
 #restore fess config saved as index in elasticsearch; crawler
 /var/lib/elasticsearch/bin/restore_config.sh
 gunicorn --reload -w 4 --bind=:8090 --chdir /var/lib/elasticsearch/bin --daemon search:app
-/var/lib/elasticsearch/bin/crawler.sh  >>/var/log/fess/fess-crawler.log 2>&1 </dev/null &
+#/var/lib/elasticsearch/bin/crawler.sh  >>/var/log/fess/fess-crawler.log 2>&1 </dev/null &
 
 service fess restart
 

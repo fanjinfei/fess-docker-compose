@@ -91,8 +91,8 @@ def crossdomain(origin=None, methods=None, headers=None,
 def before():
     if request.view_args and 'lang_code' in request.view_args:
         if request.view_args['lang_code'] not in ('fr', 'en'):
-            return abort(404)
-            #g.current_lang = 'en'
+            #return abort(404)
+            g.current_lang = 'en'
         else:
           g.current_lang = request.view_args['lang_code']
           request.view_args.pop('lang_code')
@@ -121,16 +121,6 @@ def static_page(page_name):
     return _send_static(page_name)
     #return render_template('%s' % page_name)
 
-'''
-@app.route('/js/<string:page_name>')
-def js_page(page_name):
-    #Force redirect to https, another port
-    if False and request.url.startswith('http://'):
-        return redirect(request.url.replace('http', 'https', 1)
-                        .replace('8002', '8001', 1))
-    return _send_static(page_name)
-'''
-
 @app.route("/asuggest", methods=['GET'])
 @crossdomain(origin='*')
 def suggest():
@@ -148,7 +138,17 @@ def suggest():
         traceback.print_exc()
     rtext = json.dumps(res)
     return rtext
-    
+
+'''
+@app.route('/js/<string:page_name>')
+def js_page(page_name):
+    #Force redirect to https, another port
+    if False and request.url.startswith('http://'):
+        return redirect(request.url.replace('http', 'https', 1)
+                        .replace('8002', '8001', 1))
+    return _send_static(page_name)
+'''
+
 date_range = {
     "timestamp:[now-1d/d TO *]":[0,'Past 24 Hours'],
     "timestamp:[now-7d/d TO *]":[1,'Past Week'],
@@ -176,7 +176,7 @@ def _get_search_post(q, start_page=1, page_size=20, labels=None, burl=None, lang
 
     print (burl, payload)
     user_agent = {'User-agent': 'statcan search'}
-    r = requests.post(url=burl, headers=user_agent, data=payload, timeout=3)
+    r = requests.post(url=burl, headers=user_agent, data=payload, timeout=10)
     if r.status_code == requests.codes.ok:
         print r.text[-200:]
         return r.text
@@ -252,43 +252,23 @@ def proxy(path):
   cookies = request.cookies
   dj = dict(cookies)
   s = requests.Session()
-  try:
-      if request.method == 'GET':
-        params = urllib.urlencode(request.args)
-        res = s.get('{end_point}/{path}?{query}'.format(end_point=end_point, path=path, query=params), cookies=dj, timeout=8,
-            allow_redirects=(False if path!='go' else True))
-        if "NotfoundAction_index_Form" in res.content:
-            return "Not found", 404
-        response = make_response(res.content, res.status_code)
-        if res.headers.get('Content-type', None):
-          response.headers['Content-type'] = res.headers['Content-type']
-        if res.headers.get('Location', None):
-          response.headers['Location'] = res.headers['Location']
-        if res.headers.get('Set-Cookie', None):
-          response.headers['Set-Cookie'] = res.headers['Set-Cookie']
-        for k,v in dict(s.cookies).items():
-            response.set_cookie(k,v)
-        return response
-      else:
-        data = request.form
-        res =  s.post('{end_point}/{path}'.format(end_point=end_point, path=path), data=data, cookies=dj, timeout=3)
-        response = make_response(res.content, 200)
-        for k,v in dict(s.cookies).items():
-            response.set_cookie(k,v)
-        return response
-  except:
-        import traceback
-        traceback.print_exc()
-        return  "Not found", 404
-        
-@app.route('/', methods=['POST', 'GET'])
-def root_search():
-    res = requests.get(end_point+'/')
-    response = make_response(res.content, res.status_code)
-    #response.headers = res.headers
-    print res, end_point
+  if request.method == 'GET':
+    res = s.get('https://innovation-search-production.inno.cloud.statcan.ca/{path}'.format(path=path), cookies=dj)
+    response = make_response(res.content, 200)
+    response.headers['Content-type'] = res.headers['Content-type']
+    for k,v in dict(s.cookies).items():
+        response.set_cookie(k,v)
+    return response
+  else:
+    data = request.form
+    res =  s.post('https://innovation-search-production.inno.cloud.statcan.ca/{path}'.format(path=path), data=data, cookies=dj)
+    response = make_response(res.content, 200)
+    for k,v in dict(s.cookies).items():
+        response.set_cookie(k,v)
     return response
     
+
+
 def test():
     print _get_search_post('data', 1, 20, '',
                           end_point+'/json/', 'en', '', '')    
