@@ -1,3 +1,10 @@
+import ssl
+def a(c, h):
+    pass
+ssl.match_hostname = a
+#ssl.match_hostname = lambda cert, hostname: True
+#ssl.https_verify_certificates(enable=False)
+
 import hashlib
 
 import sys
@@ -19,9 +26,6 @@ from datetime import datetime
 #export PYTHONWARNINGS="ignore:Unverified HTTPS request"
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-import ssl
-ssl.match_hostname = lambda cert, hostname: True
 
 from crawler_base3 import write_csv, read_csv
 class Crawler():
@@ -246,7 +250,9 @@ def test(raw_cookie):
     }
     r = requests.post(url=url, data=data, timeout=10, cookies=cookie)
     print (r.text, r.status_code)
-
+def parse_experiment_details(s):
+    data = []
+    return data
 def dump_exp(raw_cookie):
     from http.cookies import SimpleCookie
     pcookie = SimpleCookie()
@@ -258,7 +264,6 @@ def dump_exp(raw_cookie):
     url = 'https://radar.statcan.gc.ca/api/'
     data = {  
        "variables":{  
-          "id":"322"
        },
        "query":'''{ studies(orderBy: CREATED_AT_DESC) {
                       nodes {
@@ -283,41 +288,60 @@ def dump_exp(raw_cookie):
            "variables":{"id":"322"},
           "query":"query ($id: BigInt!) {\n  studyById(id: $id) {\n    ...ExperimentWithTags\n    documents {\n      nodes {\n        ...DocumentData\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment ExperimentWithTags on Study {\n  ...StudyDataWithTags\n  ...ExperimentData\n  __typename\n}\n\nfragment ExperimentData on Study {\n  experiment {\n    id\n    conclusion\n    concludedAt\n    __typename\n  }\n  studyContributors {\n    nodes {\n      userId\n      studyId\n      user {\n        userProfile {\n          id\n          fullName\n          __typename\n        }\n        __typename\n      }\n      role {\n        id\n        roleName\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  studyContributorNames {\n    nodes {\n      id\n      studyId\n      name\n      role {\n        id\n        roleName\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment StudyDataWithTags on Study {\n  ...StudyData\n  ...StudyTags\n  __typename\n}\n\nfragment StudyData on Study {\n  id\n  name\n  description\n  type\n  createdBy\n  createdAt\n  updatedAt\n  visibility\n  isStatCan\n  sourceRepositoryId\n  numOfResolvedFlags\n  numOfFlags\n  userProfile {\n    id\n    firstName\n    lastName\n    fullName\n    email\n    field\n    __typename\n  }\n  flags {\n    nodes {\n      id\n      type\n      status\n      flagType {\n        type\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  studyTechnologiesTechnologies {\n    nodes {\n      id\n      name\n      category {\n        id\n        name\n        parentName\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment StudyTags on Study {\n  studyTagsTags {\n    nodes {\n      id\n      name\n      tagGroup {\n        id\n        name\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment DocumentData on Document {\n  id\n  name\n  content\n  visibility\n  position\n  studyId\n  contributors\n  createdAt\n  updatedAt\n  study {\n    id\n    type\n    name\n    createdBy\n    __typename\n  }\n  __typename\n}\n"
         }
-    q_details = details
-    q_details['variables']['id'] = "322"
-    q_details['variables'] = json.dumps( q_details['variables'])
-    r = requests.post(url=url, data=details, timeout=10, cookies=cookie)
-    if r.status_code != requests.codes.ok:
-        print ('Failed to dump experiments details', 322)
-        print (r.status_code , q_details , r.text   )
-    print (r.text)
-    return 
 
     r = requests.post(url=url, data=data, timeout=10, cookies=cookie)
     if r.status_code != requests.codes.ok:
         print ('Failed to dump experiments')
     res = json.loads(r.text)
     data = []
-    details = []
     assert ( len(res['data']['studies']['nodes']) > 0)
     keys = res['data']['studies']['nodes'][0].keys()
     data.append( ([ key for key in keys]) )
     
     res_exp_details = []
+    res_exp_details.append(['id', 'name', 'description', 'type', 'createBy', 'createAt', 'updateAt', 
+                              'visibility', 'fullname', 'field', 'conclusion', 'concludedAt' ])
     for item in res['data']['studies']['nodes']:
-        if item.get('type', '') != 'EXPERIMENT': continue
         data.append(( [ item.get(key, "") for key in data[0] ] ))
+        if item.get('type', '') != 'EXPERIMENT': continue
         eid = item.get("id")
-        q_details = details
-        q_details['variables']['id'] = "{0}".format(eid)
-        r = requests.post(url=url, data=q_details, timeout=10, cookies=cookie)
-        if r.status_code != requests.codes.ok:
-            print ('Failed to dump experiments details', eid)
-        res_exp_details.append(r.text)
+        #if eid not in ['5', '97']: continue
+
+        details['variables'] = json.dumps( { "id": "{0}".format(eid) })
+        count = 5
+        while count > 0:
+            try:
+                count -= 1
+                r = requests.post(url=url, data=details, timeout=20, cookies=cookie)
+                if r.status_code != requests.codes.ok:
+                    print ('Failed to dump experiments details', eid)
+                else:
+                    info = json.loads(r.text)
+                    info = info['data']['studyById']
+                    res = []
+                    for k in ['id', 'name', 'description', 'type', 'createdBy', 'createdAt', 'updatedAt', 
+                              'visibility' ]:
+                        res.append(info.get(k, ''))
+
+                    user = info.get('userProfile', {} )
+                    res.append(user.get('fullName', ''))
+                    res.append(user.get('field', ''))
+
+                    conclusion = info.get('experiment')
+                    res.append(conclusion.get('conclusion', ''))
+                    res.append(conclusion.get('concludedAt', ''))
+                    
+                    res_exp_details.append(res)
+                    print('reading details of ', eid)
+                    break
+            except:
+                import traceback
+                traceback.print_exc()
+                print("SSL error exc at ", eid)
     #data = list(filter(lambda x: x['type']=='EXPERIMENT', data))
-    write_csv('/tmp/dump_experiments.csv', data)
-    write_csv('/tmp/dump_experiments_details.csv', res_exp_details)
-    print ('Total: ', data)
+    write_csv('/tmp/dump_radar.csv', data, delimiter=',')
+    write_csv('/tmp/dump_experiments_details.csv', res_exp_details, delimiter=',')
+    print ('Total: ', len(data), len(res_exp_details))
 
 def test2():
     from requests_oauth2.services import GoogleClient

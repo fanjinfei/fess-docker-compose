@@ -16,21 +16,22 @@ import traceback
 import time
 from datetime import datetime
 
-def append_csv(filename, rows):
+def append_csv(filename, rows, delimiter='\t'):
     outf=open(filename, 'ab')
-    writer = unicodecsv.writer(outf, delimiter='\t')
+    writer = unicodecsv.writer(outf, delimiter=delimiter)
 
     for row in rows:
         writer.writerow(row)
 
-def write_csv(filename, rows, header=None):
+def write_csv(filename, rows, header=None, delimiter='\t'):
     outf=open(filename, 'wb')
     outf.write(codecs.BOM_UTF8)
-    writer = unicodecsv.writer(outf, delimiter='\t')
+    writer = unicodecsv.writer(outf, delimiter=delimiter)
 
     if header:
         writer.writerow(header)
     for row in rows:
+        row = [s.replace('\r',' ').replace('\n', ' ') if s else s for s in row]
         writer.writerow(row)
 
 csv.field_size_limit(sys.maxsize)
